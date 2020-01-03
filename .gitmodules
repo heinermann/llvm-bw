@@ -1,0 +1,5 @@
+[submodule "chklib/Chkdraft"]
+	path = chklib/Chkdraft
+	url = git@github.com:jjf28/Chkdraft.git
+	branch = feature/fundamental-refactoring
+

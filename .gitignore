@@ -1,0 +1,8 @@
+.vs
+x64/
+*.user
+
+out/
+build/
+*-backup-*
+
