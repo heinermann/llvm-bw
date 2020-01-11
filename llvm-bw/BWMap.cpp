@@ -21,6 +21,7 @@ void BWMap::createBackup() {
   do {
     backupPath.replace_filename(originalStem.string() + "-backup-" + std::to_string(i));
     backupPath.replace_extension(originalExt);
+    ++i;
   } while (std::filesystem::exists(backupPath));
  
   std::filesystem::copy(this->filename, backupPath);
