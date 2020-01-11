@@ -23,6 +23,16 @@ add_executable (llvm-bw
                 "IRConverter.h"
                 "BWMap.cpp"
                 "BWMap.h"
+                "IRLowering.cpp"
+                "IRLowering.h"
+                "TriggerApp.cpp"
+                "TriggerApp.h"
+                "TriggerLowering.cpp"
+                "TriggerLowering.h"
+                "TriggerBlock.cpp"
+                "TriggerBlock.h"
+                "ExtTriggerAction.h"
+                "ExtTriggerAction.cpp"
                 )
 
 set_property(TARGET llvm-bw PROPERTY CXX_STANDARD 17)

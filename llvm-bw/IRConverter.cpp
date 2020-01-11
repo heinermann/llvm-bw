@@ -74,6 +74,15 @@ void IRConverter::debugPrintFunctions() {
     std::cout << "  " << type_str << "\n";
   }
   std::cout << std::endl;
+
+  std::cout << "MAIN\n";
+  llvm::Function* f_main = module->getFunction("main");
+  for (llvm::BasicBlock& b : *f_main) {
+    std::cout << "  BLOCK:\n";
+    for (llvm::Instruction& in : b) {
+      std::cout << in.getOpcodeName() << " - " << in.getNumOperands() << " operands\n";
+    }
+  }
 }
 void IRConverter::debugPrintAliases() {
   std::cout << "Aliases:\n";

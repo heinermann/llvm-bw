@@ -218,7 +218,7 @@ NOT_IMPLEMENTED
 void LeaderboardGoalKills(Text, UnitType, Number);
 
 NOT_IMPLEMENTED
-void LeaderboardGoalPoints(Text, Number, Score);
+void LeaderboardGoalPoints(Text, Number, ScoreType);
 
 NOT_IMPLEMENTED
 void MoveLocation(Player, UnitType, LocationId sourceLocation, LocationId destLocation);

@@ -37,5 +37,5 @@ Once you've sorted out the dependencies, use the following commands. Alternative
 `cmake --build .`
 
 ## Using
-1. Use CLang to compile a C++ or other language to LLVM IR with `clang++ -S -emit-llvm test.cpp`.
+1. Use CLang to compile a C++ or other language to LLVM IR with `clang++ -S -m32 -Ofast -emit-llvm test.cpp`.
 2. Run `llvm-bw test.ll out.chk`.
