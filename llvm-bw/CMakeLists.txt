@@ -33,6 +33,13 @@ add_executable (llvm-bw
                 "TriggerBlock.h"
                 "ExtTriggerAction.h"
                 "ExtTriggerAction.cpp"
+                "TriggerTypes/DecoratedTrigger.h"
+                "TriggerTypes/DecoratedTrigger.cpp"
+                "TriggerTypes/FastVar.h"
+                "TriggerTypes/FastVarReadOnly.h"
+                "TriggerTypes/FastVarWriteOnly.h"
+                "TriggerTypes/TriggerGenerator.h"
+                "TriggerTypes/TriggerGenerator.cpp"
                 )
 
 set_property(TARGET llvm-bw PROPERTY CXX_STANDARD 17)
