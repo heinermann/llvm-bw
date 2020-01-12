@@ -8,6 +8,7 @@ add_subdirectory ("Chkdraft/StormLib")
 # Add source to this project's executable.
 add_library (MappingCoreLib STATIC
              "MappingCore.h"
+             "Logger.h"
              "Chkdraft/MappingCoreLib/ArchiveFile.cpp"
              "Chkdraft/MappingCoreLib/ArchiveFile.h"
              "Chkdraft/MappingCoreLib/Basics.cpp"
