@@ -21,6 +21,7 @@ namespace llvmbw {
       this->trig.trigger.actions[0] = ActionGen::SetDeaths(initialTargetPlayer, initialModifier, initialValue, 0);
       this->trig.trigger.actions[1] = ActionGen::NoAction();
     }
+    virtual ~FastVarWriteOnly() override {}
 
     virtual std::optional<size_t> getValueOffset() override {
       return offsetof(Chk::MemTrigger, trigger.actions[0].number);

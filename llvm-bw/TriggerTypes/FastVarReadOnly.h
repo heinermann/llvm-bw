@@ -25,6 +25,7 @@ namespace llvmbw {
 
       this->groupRelocationOffsets.insert(offsetof(Chk::MemTrigger, trigger.actions[0].group));
     }
+    virtual ~FastVarReadOnly() override {}
 
     virtual std::optional<size_t> getValueOffset() override {
       return offsetof(Chk::MemTrigger, trigger.actions[0].number);

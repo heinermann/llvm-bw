@@ -8,7 +8,7 @@ namespace llvmbw {
 
   class DecoratedTrigger {
   private:
-    static unsigned current_id;
+    //static unsigned current_id;
   public:
     unsigned id;
     Chk::MemTrigger trig = {};
@@ -16,7 +16,8 @@ namespace llvmbw {
     std::set<size_t> ptrRelocationOffsets;
     std::set<size_t> groupRelocationOffsets;
 
-    DecoratedTrigger();
+    DecoratedTrigger(unsigned id);
+    virtual ~DecoratedTrigger() {};
 
     virtual std::optional<size_t> getValueOffset() {
       return std::nullopt;

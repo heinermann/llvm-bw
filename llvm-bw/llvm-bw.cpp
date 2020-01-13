@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <limits>
 
-#include "IRConverter.h"
+#include "IRReader.h"
 #include "BWMap.h"
 
 #include "../chklib/Logger.h"
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
   // ---
 
-  llvmbw::IRConverter ir{ argv[1] };
+  llvmbw::IRReader ir{ argv[1] };
   ir.debugPrintAll();
   
   // ---
