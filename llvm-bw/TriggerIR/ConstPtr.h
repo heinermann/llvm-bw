@@ -1,22 +1,20 @@
 #pragma once
 #include "TrigInst.h"
 
-#include <cstdint>
-
 namespace llvmbw {
-  class Constant : public TrigInst {
+  class ConstPtr : public TrigInst {
   private:
     uint32_t value;
     uint32_t bitmask;
 
   public:
-    Constant(uint32_t _value, uint32_t _bitmask = 0xFFFFFFFF)
-      : TrigInst(TrigInst::Type::Constant)
+    ConstPtr(uint32_t _value, uint32_t _bitmask = 0xFFFFFFFF)
+      : TrigInst(TrigInst::Type::ConstPtr)
       , value(_value)
       , bitmask(_bitmask)
     {}
 
-    virtual ~Constant() override {}
+    virtual ~ConstPtr() override {}
 
     virtual bool optimizationPass() override;
     virtual std::ostream& writeDot(std::ostream& os) override;

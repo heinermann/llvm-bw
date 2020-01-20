@@ -5,19 +5,15 @@
 #include <memory>
 
 namespace llvmbw {
-  class Assign : public TrigInst {
+  class Block : public TrigInst {
   private:
-    std::shared_ptr<TrigInst> lhs;
-    std::shared_ptr<TrigInst> rhs;
+    std::vector<std::shared_ptr<TrigInst>> instructions;
 
   public:
-    Assign(std::shared_ptr<TrigInst> _lhs, std::shared_ptr<TrigInst> _rhs)
-      : TrigInst(TrigInst::Type::Assign)
-      , lhs(_lhs)
-      , rhs(_rhs)
+    Block(const std::string& id) : TrigInst(TrigInst::Type::Block, id)
     {}
 
-    virtual ~Assign() override {}
+    virtual ~Block() override {}
 
     virtual bool optimizationPass() override;
     virtual std::ostream& writeDot(std::ostream& os) override;

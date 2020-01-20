@@ -1,6 +1,9 @@
 #pragma once
 
-#include "TriggerTypes/DecoratedTrigger.h"
+#include "TriggerIR/Program.h"
+#include "TriggerIR/Function.h"
+#include "TriggerIR/Block.h"
+#include "TriggerIR/TrigInst.h"
 #include "IRReader.h"
 
 #include <llvm/IR/BasicBlock.h>
@@ -8,31 +11,27 @@
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/Instruction.h>
 
-#include <vector>
-#include <map>
 #include <cstdint>
-#include <string>
+#include <memory>
 
 namespace llvmbw {
   class IRLowering {
   private:
     const IRReader& ir;
 
-    std::vector<DecoratedTrigger> triggers;
-    std::map<std::string, size_t> trigger_symbols_map;
-
   public:
     IRLowering(const IRReader _ir) : ir(_ir) {}
 
-    bool lower_all();
+    std::shared_ptr<Program> lower_all();
 
-    bool lower_globals();
-    bool lower_global(const llvm::GlobalVariable& g);
+    void lower_globals(Program& program);
+    void lower_global(const llvm::GlobalVariable& g);
 
-    bool lower_functions();
-    bool lower_function(const llvm::Function& f);
-    bool lower_function_block(const llvm::BasicBlock& block);
-    bool lower_instruction(const llvm::Instruction& inst);
+    void lower_functions(Program& program);
+    std::shared_ptr<Function> lower_function(const llvm::Function& f);
+    std::shared_ptr<Block> lower_function_block(const llvm::BasicBlock& block);
+    std::shared_ptr<TrigInst> lower_instruction(const llvm::Instruction& inst);
+    std::shared_ptr<TrigInst> lower_value(const llvm::Value* value);
 
     bool checkSupportedType(const llvm::Type* t);
 

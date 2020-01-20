@@ -1,3 +1,3 @@
-#include "Prologue.h"
+#include "NextPtr.h"
 
 using namespace llvmbw;

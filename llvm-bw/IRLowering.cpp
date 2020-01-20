@@ -1,73 +1,82 @@
 #include "IRLowering.h"
 
+#include "Exceptions/UnsupportedException.h"
+#include "TriggerIR/Constant.h"
+#include "TriggerIR/ConstPtr.h"
+
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Instructions.h>
 
+#include <iostream>
+
 using namespace llvmbw;
 
-bool IRLowering::lower_all()
+std::shared_ptr<Program> IRLowering::lower_all()
 {
-  return lower_globals()
-    & lower_functions();
+  std::shared_ptr<Program> program = std::make_shared<Program>();
+  try {
+
+    lower_globals(*program);
+    lower_functions(*program);
+  }
+  catch (std::exception & e) {
+    std::cerr << "[ERROR] " << e.what() << std::endl;
+  }
+  return program;
 }
 
-bool IRLowering::lower_globals()
+void IRLowering::lower_globals(Program& program)
 {
-  bool success = true;
   for (const llvm::GlobalVariable& g : ir.module->globals()) {
-    success &= lower_global(g);
+    try {
+      lower_global(g);
+    }
+    catch (std::exception & e) {
+      std::cerr << "[ERROR] " << e.what() << std::endl;
+    }
   }
-  return success;
 }
 
-bool IRLowering::lower_global(const llvm::GlobalVariable& g)
+void IRLowering::lower_global(const llvm::GlobalVariable& g)
 {
-  std::cerr << "ERROR: [" << g.getName().str() << "] Globals are unsupported" << std::endl;
-  return false;
+  throw NamedUnsupportedException(g.getName().str(), "Globals");
 }
 
 
-bool IRLowering::lower_functions()
+void IRLowering::lower_functions(Program& program)
 {
-  bool success = true;
   for (const llvm::Function& f : ir.module->functions()) {
-    success &= lower_function(f);
+    try {
+      program.add_function(lower_function(f));
+    }
+    catch (std::exception & e) {
+      std::cerr << "[ERROR] " << e.what() << std::endl;
+    }
   }
-  return success;
 }
 
-bool IRLowering::lower_function(const llvm::Function& f)
+std::shared_ptr<Function> IRLowering::lower_function(const llvm::Function& f)
 {
-  if (f.doesNotReturn()) {
-    std::cerr << "ERROR: [" << f.getName().str() << "] noreturn is unsupported" << std::endl;
-    return false;
-  }
-  if (f.getFunctionType()->getNumParams() > 0) {
-    std::cerr << "ERROR: [" << f.getName().str() << "] function params is unsupported" << std::endl;
-    return false;
-  }
-  if (!checkSupportedType(f.getFunctionType()->getReturnType())) {
-    std::cerr << "ERROR: [" << f.getName().str() << "] return type is unsupported" << std::endl;
-    return false;
-  }
+  if (f.doesNotReturn()) throw NamedUnsupportedException(f.getName().str(), "noreturn");
+  if (f.getFunctionType()->getNumParams() > 0) throw NamedUnsupportedException(f.getName().str(), "function params");
+  if (!checkSupportedType(f.getFunctionType()->getReturnType())) throw NamedUnsupportedException(f.getName().str(), "return types");
 
-  bool success = true;
+  std::shared_ptr<Function> result_function = std::make_shared<Function>(f.getName().str());
   for (const llvm::BasicBlock& block : f) {
-    success &= lower_function_block(block);
+    lower_function_block(block);
   }
-  return success;
+  return result_function;
 }
 
-bool IRLowering::lower_function_block(const llvm::BasicBlock& block)
+std::shared_ptr<Block> IRLowering::lower_function_block(const llvm::BasicBlock& block)
 {
-  bool success = true;
   for (const llvm::Instruction& inst : block) {
-    success &= lower_instruction(inst);
+    lower_instruction(inst);
   }
-  return false;
 }
 
-bool IRLowering::lower_instruction(const llvm::Instruction& inst)
+
+std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction& inst)
 {
   switch (inst.getOpcode()) {
   case llvm::Instruction::Ret:
@@ -134,40 +143,24 @@ bool IRLowering::lower_instruction(const llvm::Instruction& inst)
   {
     const llvm::StoreInst& store_inst = static_cast<const llvm::StoreInst&>(inst);
 
-    if (store_inst.isVolatile()) {
-      std::cerr << "ERROR: [StoreInst] volatile is unsupported" << std::endl;
-      return false;
-    }
-    if (!store_inst.isUnordered()) {
-      std::cerr << "ERROR: [StoreInst] ordering is unsupported" << std::endl;
-      return false;
-    }
-    if (store_inst.getAlignment() % 4 != 0) {
-      std::cerr << "ERROR: [StoreInst] alignment to non-32-bit boundary is unsupported" << std::endl;
-      return false;
-    }
+    if (store_inst.isVolatile()) throw NamedUnsupportedException("StoreInst", "volatile");
+    if (!store_inst.isUnordered()) throw NamedUnsupportedException("StoreInst", "ordering");
+    if (store_inst.getAlignment() % 4 != 0) throw NamedUnsupportedException("Store", "allignment to non-32-bit boundary");
 
     const llvm::Value* value = store_inst.getValueOperand();
     const llvm::Value* pointer = store_inst.getPointerOperand();
 
-    if (!llvm::Constant::classof(value)) {
-      std::cerr << "ERROR: [Store] non-const value operand is unsupported" << std::endl;
-      return false;
-    }
-    if (value->getValueID() != llvm::Value::ConstantIntVal) {
-      std::cerr << "ERROR: [Store] non-int value operand is unsupported" << std::endl;
-      return false;
-    }
-    if (!llvm::Constant::classof(pointer)) {
-      std::cerr << "ERROR: [Store] non-const pointer operand is unsupported" << std::endl;
-      return false;
-    }
-    if (pointer->getValueID() != llvm::Value::ConstantExprVal) {
-      std::cerr << "ERROR: [Store] non-const-expr pointer operand is unsupported" << std::endl;
-      return false;
-    }
+    if (!llvm::Constant::classof(value)) throw NamedUnsupportedException("StoreInst", "non-const value operand");
+    if (value->getValueID() != llvm::Value::ConstantIntVal) throw NamedUnsupportedException("StoreInst", "non-int value operand");
+    if (!llvm::Constant::classof(pointer)) throw NamedUnsupportedException("StoreInst", "non-const pointer operand");
+    if (pointer->getValueID() != llvm::Value::ConstantExprVal) throw NamedUnsupportedException("StoreInst", "non-const-expr pointer operand"); 
 
-    // TODO: Eval
+    if (value->getValueID() == llvm::Value::ConstantIntVal && pointer->getValueID() == llvm::Value::ConstantExprVal) {
+      // TODO eval
+    }
+    else {
+      throw NamedUnsupportedException("StoreInst", "");
+    }
   }
   break;
   case llvm::Instruction::GetElementPtr:
@@ -203,16 +196,11 @@ bool IRLowering::lower_instruction(const llvm::Instruction& inst)
     const llvm::IntToPtrInst& int_to_ptr_inst = static_cast<const llvm::IntToPtrInst&>(inst);
     const llvm::Value* value = int_to_ptr_inst.getOperand(0);
 
-    if (!llvm::Constant::classof(value)) {
-      std::cerr << "ERROR: [IntToPtr] non-const value operand is unsupported" << std::endl;
-      return false;
-    }
-    if (value->getValueID() != llvm::Value::ConstantIntVal) {
-      std::cerr << "ERROR: [IntToPtr] non-int value operand is unsupported" << std::endl;
-      return false;
-    }
+    if (!llvm::Constant::classof(value)) throw NamedUnsupportedException("IntToPtr", "non-const value operand"); 
+    if (value->getValueID() != llvm::Value::ConstantIntVal) throw NamedUnsupportedException("IntToPtr", "non-int value operand"); 
 
     // TODO: Eval
+    return std::make_shared<ConstPtr>(value);
   }
   break;
   case llvm::Instruction::BitCast:
@@ -258,8 +246,7 @@ bool IRLowering::lower_instruction(const llvm::Instruction& inst)
   default:
     break;
   }
-  std::cerr << "ERROR: [" << inst.getName().str() << "] instruction is unsupported" << std::endl;
-  return false;
+  throw NamedUnsupportedException(inst.getName().str(), "instruction");
 }
 
 bool IRLowering::checkSupportedType(const llvm::Type* t) {
@@ -287,18 +274,9 @@ bool IRLowering::checkSupportedType(const llvm::Type* t) {
   case llvm::Type::TokenTyID:
     break;
   case llvm::Type::IntegerTyID:
-  {
-    if (t->getIntegerBitWidth() == 0) {
-      std::cerr << "ERROR: IntegerType can't have bit width of 0" << std::endl;
-      return false;
-    }
-    if (t->getIntegerBitWidth() > 32) {
-      std::cerr << "ERROR: IntegerType bit widths of > 32-bit are unsupported" << std::endl;
-      return false;
-    }
+    if (t->getIntegerBitWidth() == 0) throw NamedUnsupportedException("IntegerType", "bit-width of 0");
+    if (t->getIntegerBitWidth() > 32) throw NamedUnsupportedException("IntegerType", "bit widths of > 32-bit");
     return true;
-  }
-    break;
   case llvm::Type::FunctionTyID:
     break;
   case llvm::Type::StructTyID:
@@ -315,7 +293,73 @@ bool IRLowering::checkSupportedType(const llvm::Type* t) {
   llvm::raw_string_ostream rso(type_str);
   t->print(rso);
   
-  std::cerr << "ERROR: Type is unsupported - " << type_str << std::endl;
-  return false;
+  throw NamedUnsupportedException(type_str, "type");
 }
 
+std::shared_ptr<TrigInst> IRLowering::lower_value(const llvm::Value* value) {
+  switch (value->getValueID()) {
+  case llvm::Value::FunctionVal:
+    throw NamedUnsupportedException("FunctionVal", "type");
+  case llvm::Value::GlobalAliasVal:
+    throw NamedUnsupportedException("GlobalAliasVal", "type");
+  case llvm::Value::GlobalIFuncVal:
+    throw NamedUnsupportedException("GlobalIFuncVal", "type");
+  case llvm::Value::GlobalVariableVal:
+    throw NamedUnsupportedException("GlobalVariableVal", "type");
+  case llvm::Value::BlockAddressVal:
+    throw NamedUnsupportedException("BlockAddressVal", "type");
+  case llvm::Value::ConstantExprVal:
+  {
+    const llvm::ConstantExpr* const_expr = static_cast<const llvm::ConstantExpr*>(value);
+    const llvm::Instruction* const_expr_inst = const_expr->getAsInstruction();
+    return this->lower_instruction(*const_expr_inst);
+  }
+  break;
+  case llvm::Value::ConstantArrayVal:
+    throw NamedUnsupportedException("ConstantArrayVal", "type");
+  case llvm::Value::ConstantStructVal:
+    throw NamedUnsupportedException("ConstantStructVal", "type");
+  case llvm::Value::ConstantVectorVal:
+    throw NamedUnsupportedException("ConstantVectorVal", "type");
+  case llvm::Value::UndefValueVal:
+    throw NamedUnsupportedException("UndefValueVal", "type");
+  case llvm::Value::ConstantAggregateZeroVal:
+    throw NamedUnsupportedException("ConstantAggregateZeroVal", "type");
+  case llvm::Value::ConstantDataArrayVal:
+    throw NamedUnsupportedException("ConstantDataArrayVal", "type");
+  case llvm::Value::ConstantDataVectorVal:
+    throw NamedUnsupportedException("ConstantDataVectorVal", "type");
+  case llvm::Value::ConstantIntVal:
+  {
+    const llvm::ConstantInt* const_int = static_cast<const llvm::ConstantInt*>(value);
+    if (const_int->getBitWidth() != 32) throw NamedUnsupportedException("ConstantIntVal", "non-32 bit constants");
+
+    return std::make_shared<Constant>(static_cast<uint32_t>(const_int->getZExtValue()), (1 << const_int->getBitWidth()) - 1);
+  }
+  break;
+  case llvm::Value::ConstantFPVal:
+    throw NamedUnsupportedException("ConstantFPVal", "type");
+  case llvm::Value::ConstantPointerNullVal:
+    throw NamedUnsupportedException("ConstantPointerNullVal", "type");
+  case llvm::Value::ConstantTokenNoneVal:
+    throw NamedUnsupportedException("ConstantTokenNoneVal", "type");
+  case llvm::Value::ArgumentVal:
+    throw NamedUnsupportedException("ArgumentVal", "type");
+  case llvm::Value::BasicBlockVal:
+    throw NamedUnsupportedException("BasicBlockVal", "type");
+  case llvm::Value::MetadataAsValueVal:
+    throw NamedUnsupportedException("MetadataAsValueVal", "type");
+  case llvm::Value::InlineAsmVal:
+    throw NamedUnsupportedException("InlineAsmVal", "type");
+  case llvm::Value::MemoryUseVal:
+    throw NamedUnsupportedException("MemoryUseVal", "type");
+  case llvm::Value::MemoryDefVal:
+    throw NamedUnsupportedException("MemoryDefVal", "type");
+  case llvm::Value::MemoryPhiVal:
+    throw NamedUnsupportedException("MemoryPhiVal", "type");
+  case llvm::Value::InstructionVal:
+    throw NamedUnsupportedException("InstructionVal", "type");
+  default:
+    break;
+  }
+}
