@@ -3,29 +3,14 @@ source_filename = "test.cpp"
 target datalayout = "e-m:x-p:32:32-i64:64-f80:32-n8:16:32-a:0:32-S32"
 target triple = "i386-pc-windows-msvc19.23.28105"
 
-@"?someGlobal@@3HA" = dso_local local_unnamed_addr global i32 5, align 4
-
-; Function Attrs: norecurse
+; Function Attrs: nofree norecurse nounwind writeonly
 define dso_local i32 @main() local_unnamed_addr #0 {
   store i16 1, i16* inttoptr (i32 5763548 to i16*), align 4, !tbaa !3
   store i16 0, i16* inttoptr (i32 6621600 to i16*), align 32, !tbaa !3
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
-  tail call void @"?MinimapPing@@YAXH@Z"(i32 0)
   ret i32 0
 }
 
-declare dso_local void @"?MinimapPing@@YAXH@Z"(i32) local_unnamed_addr #1
-
-attributes #0 = { norecurse "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-frame-pointer-elim"="false" "no-infs-fp-math"="true" "no-jump-tables"="false" "no-nans-fp-math"="true" "no-signed-zeros-fp-math"="true" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="pentium4" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="true" "use-soft-float"="false" }
-attributes #1 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="true" "no-nans-fp-math"="true" "no-signed-zeros-fp-math"="true" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="pentium4" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="true" "use-soft-float"="false" }
+attributes #0 = { nofree norecurse nounwind writeonly "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-frame-pointer-elim"="false" "no-infs-fp-math"="true" "no-jump-tables"="false" "no-nans-fp-math"="true" "no-signed-zeros-fp-math"="true" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="pentium4" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="true" "use-soft-float"="false" }
 
 !llvm.module.flags = !{!0, !1}
 !llvm.ident = !{!2}

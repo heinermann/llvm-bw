@@ -479,6 +479,18 @@ Chk::Action ActionGen::SetDeaths(Sc::Player::Id player, Chk::Action::ValueModifi
   act.maskFlag = Chk::Action::MaskFlag::Disabled;
   return act;
 }
+Chk::Action ActionGen::SetMemory(uint32_t memAddress, Chk::Action::ValueModifier modifier, uint32_t number)
+{
+  Chk::Action act{};
+  act.actionType = Chk::Action::Type::SetDeaths;
+  act.group = (memAddress - 0x58A364) / 4;
+  act.type2 = modifier;
+  act.number = number;
+  act.type = 0;
+  act.flags = 0;
+  act.maskFlag = Chk::Action::MaskFlag::Disabled;
+  return act;
+}
 Chk::Action ActionGen::Order() {
   Chk::Action act{};
 

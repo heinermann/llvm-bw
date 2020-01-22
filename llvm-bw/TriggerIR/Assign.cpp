@@ -14,7 +14,7 @@ std::ostream& Assign::writeDot(std::ostream& os)
   return os;
 }
 
-std::ostream& Assign::writeTxt(std::ostream& os, int tab = 0)
+std::ostream& Assign::writeTxt(std::ostream& os, int tab)
 {
   os << std::string(tab, ' ');
   lhs->writeTxt(os);

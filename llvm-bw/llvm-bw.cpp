@@ -2,7 +2,10 @@
 #include <limits>
 
 #include "IRReader.h"
+#include "IRLowering.h"
 #include "BWMap.h"
+
+#include "TriggerIR/Program.h"
 
 #include "../chklib/Logger.h"
 
@@ -13,6 +16,14 @@ void askPressEnter() {
   std::cout << "Press enter to continue..." << std::endl;
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 #endif
+}
+
+void lower_test(llvmbw::IRReader& ir) {
+  llvmbw::IRLowering lowering{ ir };
+  std::shared_ptr<llvmbw::Program> program = lowering.lower_all();
+  std::cout << "Writing...\n\n";
+  program->writeTxt(std::cout);
+  std::cout.flush();
 }
 
 int main(int argc, char** argv)
@@ -26,10 +37,13 @@ int main(int argc, char** argv)
   // ---
 
   llvmbw::IRReader ir{ argv[1] };
-  ir.debugPrintAll();
+  //ir.debugPrintAll();
   
+  lower_test(ir);
+
   // ---
 
+  /*
   llvmbw::BWMap map{ argv[2] };
   map.createBackup();
   map.deleteCompiledTriggers();
@@ -37,4 +51,5 @@ int main(int argc, char** argv)
   // stuff
 
   map.save();
+  */
 }

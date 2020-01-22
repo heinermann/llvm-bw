@@ -14,8 +14,11 @@ std::ostream& Constant::writeDot(std::ostream& os)
   return os;
 }
 
-std::ostream& Constant::writeTxt(std::ostream& os, int tab = 0)
+std::ostream& Constant::writeTxt(std::ostream& os, int tab)
 {
-  os << std::string(tab, ' ') << this->value;
+  os << this->value;
+  if (this->bitmask != 0xFFFFFFFF) {
+    os << std::hex << " & 0x" << this->bitmask << std::dec;
+  }
   return os;
 }

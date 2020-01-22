@@ -85,6 +85,10 @@ add_executable (llvm-bw
                 "TriggerIR/Variable.h"
                 "TriggerIR/Program.cpp"
                 "TriggerIR/Program.h"
+                "TriggerIR/Ptr.cpp"
+                "TriggerIR/Ptr.h"
+                "TriggerIR/Retn.cpp"
+                "TriggerIR/Retn.h"
 
                 "Exceptions/UnsupportedException.h"
                 "Exceptions/NameConflictException.h"

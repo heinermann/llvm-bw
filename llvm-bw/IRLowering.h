@@ -20,7 +20,7 @@ namespace llvmbw {
     const IRReader& ir;
 
   public:
-    IRLowering(const IRReader _ir) : ir(_ir) {}
+    IRLowering(const IRReader& _ir) : ir(_ir) {}
 
     std::shared_ptr<Program> lower_all();
 

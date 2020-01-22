@@ -29,6 +29,7 @@ void BWMap::createBackup() {
 
 void BWMap::deleteCompiledTriggers() {
   // Delete our compiled triggers (bit flag #19)
+  /*
   int i = 0;
   while (i < map.triggers.numTriggers()) {
     auto trig = map.triggers.getTrigger(i);
@@ -38,6 +39,7 @@ void BWMap::deleteCompiledTriggers() {
     }
     ++i;
   }
+  */
 }
 
 void BWMap::save() {

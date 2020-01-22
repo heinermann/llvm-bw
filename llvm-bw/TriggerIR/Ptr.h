@@ -1,21 +1,20 @@
 #pragma once
 #include "TrigInst.h"
 
-#include <vector>
 #include <memory>
 
 namespace llvmbw {
-  class Block : public TrigInst {
+  class Ptr : public TrigInst {
   private:
-    std::vector<std::shared_ptr<TrigInst>> instructions;
+    std::shared_ptr<TrigInst> value;
 
   public:
-    Block(const std::string& id) : TrigInst(TrigInst::Type::Block, id)
+    Ptr(std::shared_ptr<TrigInst> _value)
+      : TrigInst(TrigInst::Type::Ptr)
+      , value(_value)
     {}
 
-    bool add_instruction(std::shared_ptr<TrigInst> instruction);
-
-    virtual ~Block() override {}
+    virtual ~Ptr() override {}
 
     virtual bool optimizationPass() override;
     virtual std::ostream& writeDot(std::ostream& os) override;

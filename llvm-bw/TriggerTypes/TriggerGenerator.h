@@ -78,6 +78,7 @@ namespace llvmbw {
     Chk::Action SetInvincibility();
     Chk::Action CreateUnit();
     Chk::Action SetDeaths(Sc::Player::Id player, Chk::Action::ValueModifier modifier, uint32_t number, Sc::Unit::Type unitType);
+    Chk::Action SetMemory(uint32_t memAddress, Chk::Action::ValueModifier modifier, uint32_t number);
     Chk::Action Order();
     Chk::Action Comment();
     Chk::Action GiveUnitsToPlayer();

@@ -2,7 +2,9 @@
 
 #include "Exceptions/UnsupportedException.h"
 #include "TriggerIR/Constant.h"
-#include "TriggerIR/ConstPtr.h"
+#include "TriggerIR/Ptr.h"
+#include "TriggerIR/Assign.h"
+#include "TriggerIR/Retn.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Instructions.h>
@@ -63,16 +65,18 @@ std::shared_ptr<Function> IRLowering::lower_function(const llvm::Function& f)
 
   std::shared_ptr<Function> result_function = std::make_shared<Function>(f.getName().str());
   for (const llvm::BasicBlock& block : f) {
-    lower_function_block(block);
+    result_function->add_block(lower_function_block(block));
   }
   return result_function;
 }
 
 std::shared_ptr<Block> IRLowering::lower_function_block(const llvm::BasicBlock& block)
 {
+  std::shared_ptr<Block> result = std::make_shared<Block>(block.getName().str());
   for (const llvm::Instruction& inst : block) {
-    lower_instruction(inst);
+    result->add_instruction(lower_instruction(inst));
   }
+  return result;
 }
 
 
@@ -80,7 +84,16 @@ std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction&
 {
   switch (inst.getOpcode()) {
   case llvm::Instruction::Ret:
-    break;
+  {
+    const llvm::ReturnInst& retn_inst = static_cast<const llvm::ReturnInst&>(inst);
+
+    if (retn_inst.getReturnValue() == nullptr) {
+      return std::make_shared<Retn>();
+    }
+    else {
+      return std::make_shared<Retn>(lower_value(retn_inst.getReturnValue()));
+    }
+  }
   case llvm::Instruction::Br:
     break;
   case llvm::Instruction::Switch:
@@ -156,7 +169,8 @@ std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction&
     if (pointer->getValueID() != llvm::Value::ConstantExprVal) throw NamedUnsupportedException("StoreInst", "non-const-expr pointer operand"); 
 
     if (value->getValueID() == llvm::Value::ConstantIntVal && pointer->getValueID() == llvm::Value::ConstantExprVal) {
-      // TODO eval
+
+      return std::make_shared<Assign>(lower_value(pointer), lower_value(value));
     }
     else {
       throw NamedUnsupportedException("StoreInst", "");
@@ -200,7 +214,7 @@ std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction&
     if (value->getValueID() != llvm::Value::ConstantIntVal) throw NamedUnsupportedException("IntToPtr", "non-int value operand"); 
 
     // TODO: Eval
-    return std::make_shared<ConstPtr>(value);
+    return std::make_shared<Ptr>(lower_value(value));
   }
   break;
   case llvm::Instruction::BitCast:
@@ -246,7 +260,7 @@ std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction&
   default:
     break;
   }
-  throw NamedUnsupportedException(inst.getName().str(), "instruction");
+  throw NamedUnsupportedException(inst.getOpcodeName(), "instruction");
 }
 
 bool IRLowering::checkSupportedType(const llvm::Type* t) {
@@ -332,9 +346,10 @@ std::shared_ptr<TrigInst> IRLowering::lower_value(const llvm::Value* value) {
   case llvm::Value::ConstantIntVal:
   {
     const llvm::ConstantInt* const_int = static_cast<const llvm::ConstantInt*>(value);
-    if (const_int->getBitWidth() != 32) throw NamedUnsupportedException("ConstantIntVal", "non-32 bit constants");
+    if (const_int->getBitWidth() > 32) throw NamedUnsupportedException("ConstantIntVal", "> 32 bit constants");
+    if (const_int->getBitWidth() == 0) throw NamedUnsupportedException("ConstantIntVal", "0 bit constants");
 
-    return std::make_shared<Constant>(static_cast<uint32_t>(const_int->getZExtValue()), (1 << const_int->getBitWidth()) - 1);
+    return std::make_shared<Constant>(static_cast<uint32_t>(const_int->getZExtValue()), (1ULL << const_int->getBitWidth()) - 1);
   }
   break;
   case llvm::Value::ConstantFPVal:

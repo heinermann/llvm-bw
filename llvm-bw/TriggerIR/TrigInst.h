@@ -24,6 +24,8 @@ namespace llvmbw {
 
       Constant,
       ConstPtr,
+      Ptr,
+      Retn,
       Variable,
       NextPtr,
 
@@ -73,17 +75,6 @@ namespace llvmbw {
     virtual bool optimizationPass() = 0;
 
     /**
-      * Assigns a memory address to this IR node (to be allocated throughout its subnodes).
-      * Returns `startAddress + size()`.
-      */
-    virtual uint32_t assignMemAddress(uint32_t startAddress) = 0;
-
-    /**
-      * Get the number of bytes needed to allocate this block.
-      */
-    virtual size_t size() = 0;
-
-    /**
       * Write a graphviz graph (dot format) to `os`.
       */
     virtual std::ostream& writeDot(std::ostream& os) = 0;
@@ -92,10 +83,5 @@ namespace llvmbw {
       * Write a plaintext representation to `os`.
       */
     virtual std::ostream& writeTxt(std::ostream& os, int tab = 0) = 0;
-
-    /**
-      * Write data to `os`.
-      */
-    virtual std::ostream& writeData(std::ostream& os, bool finished = false) = 0;
   };
 }
