@@ -14,7 +14,6 @@ namespace llvmbw {
     BWMap(const std::string& mapFileName);
 
     void createBackup();
-    void deleteCompiledTriggers();
 
     void save();
   };

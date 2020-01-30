@@ -43,13 +43,10 @@ int main(int argc, char** argv)
 
   // ---
 
-  /*
   llvmbw::BWMap map{ argv[2] };
   map.createBackup();
-  map.deleteCompiledTriggers();
 
   // stuff
 
   map.save();
-  */
 }
