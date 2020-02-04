@@ -24,7 +24,6 @@ add_executable (llvm-bw
                 "BWMap.cpp"
                 "BWMap.h"
                 "IRLowering.cpp"
-                "IRLowering.h"
                 "TriggerLowering.cpp"
                 "TriggerLowering.h"
 

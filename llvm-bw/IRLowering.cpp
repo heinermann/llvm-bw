@@ -1,4 +1,4 @@
-#include "IRLowering.h"
+#include "IRReader.h"
 
 #include "Exceptions/UnsupportedException.h"
 #include "TriggerIR/Constant.h"
@@ -13,7 +13,7 @@
 
 using namespace llvmbw;
 
-std::shared_ptr<Program> IRLowering::lower_all()
+std::shared_ptr<Program> IRReader::lower_all()
 {
   std::shared_ptr<Program> program = std::make_shared<Program>();
   try {
@@ -27,9 +27,9 @@ std::shared_ptr<Program> IRLowering::lower_all()
   return program;
 }
 
-void IRLowering::lower_globals(Program& program)
+void IRReader::lower_globals(Program& program)
 {
-  for (const llvm::GlobalVariable& g : ir.module->globals()) {
+  for (const llvm::GlobalVariable& g : module->globals()) {
     try {
       lower_global(g);
     }
@@ -39,15 +39,15 @@ void IRLowering::lower_globals(Program& program)
   }
 }
 
-void IRLowering::lower_global(const llvm::GlobalVariable& g)
+void IRReader::lower_global(const llvm::GlobalVariable& g)
 {
   throw NamedUnsupportedException(g.getName().str(), "Globals");
 }
 
 
-void IRLowering::lower_functions(Program& program)
+void IRReader::lower_functions(Program& program)
 {
-  for (const llvm::Function& f : ir.module->functions()) {
+  for (const llvm::Function& f : module->functions()) {
     try {
       program.add_function(lower_function(f));
     }
@@ -57,7 +57,7 @@ void IRLowering::lower_functions(Program& program)
   }
 }
 
-std::shared_ptr<Function> IRLowering::lower_function(const llvm::Function& f)
+std::shared_ptr<Function> IRReader::lower_function(const llvm::Function& f)
 {
   if (f.doesNotReturn()) throw NamedUnsupportedException(f.getName().str(), "noreturn");
   if (f.getFunctionType()->getNumParams() > 0) throw NamedUnsupportedException(f.getName().str(), "function params");
@@ -70,7 +70,7 @@ std::shared_ptr<Function> IRLowering::lower_function(const llvm::Function& f)
   return result_function;
 }
 
-std::shared_ptr<Block> IRLowering::lower_function_block(const llvm::BasicBlock& block)
+std::shared_ptr<Block> IRReader::lower_function_block(const llvm::BasicBlock& block)
 {
   std::shared_ptr<Block> result = std::make_shared<Block>(block.getName().str());
   for (const llvm::Instruction& inst : block) {
@@ -80,7 +80,7 @@ std::shared_ptr<Block> IRLowering::lower_function_block(const llvm::BasicBlock& 
 }
 
 
-std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction& inst)
+std::shared_ptr<TrigInst> IRReader::lower_instruction(const llvm::Instruction& inst)
 {
   switch (inst.getOpcode()) {
   case llvm::Instruction::Ret:
@@ -263,7 +263,7 @@ std::shared_ptr<TrigInst> IRLowering::lower_instruction(const llvm::Instruction&
   throw NamedUnsupportedException(inst.getOpcodeName(), "instruction");
 }
 
-bool IRLowering::checkSupportedType(const llvm::Type* t) {
+bool IRReader::checkSupportedType(const llvm::Type* t) {
   switch (t->getTypeID()) {
   case llvm::Type::VoidTyID:
     break;
@@ -310,7 +310,7 @@ bool IRLowering::checkSupportedType(const llvm::Type* t) {
   throw NamedUnsupportedException(type_str, "type");
 }
 
-std::shared_ptr<TrigInst> IRLowering::lower_value(const llvm::Value* value) {
+std::shared_ptr<TrigInst> IRReader::lower_value(const llvm::Value* value) {
   switch (value->getValueID()) {
   case llvm::Value::FunctionVal:
     throw NamedUnsupportedException("FunctionVal", "type");
@@ -325,8 +325,10 @@ std::shared_ptr<TrigInst> IRLowering::lower_value(const llvm::Value* value) {
   case llvm::Value::ConstantExprVal:
   {
     const llvm::ConstantExpr* const_expr = static_cast<const llvm::ConstantExpr*>(value);
-    const llvm::Instruction* const_expr_inst = const_expr->getAsInstruction();
-    return this->lower_instruction(*const_expr_inst);
+    llvm::Instruction* const_expr_inst = const_expr->getAsInstruction();
+    auto result = this->lower_instruction(*const_expr_inst);
+    const_expr_inst->deleteValue();
+    return result;
   }
   break;
   case llvm::Value::ConstantArrayVal:

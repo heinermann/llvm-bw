@@ -2,7 +2,6 @@
 #include <limits>
 
 #include "IRReader.h"
-#include "IRLowering.h"
 #include "BWMap.h"
 
 #include "TriggerIR/Program.h"
@@ -18,14 +17,6 @@ void askPressEnter() {
 #endif
 }
 
-void lower_test(llvmbw::IRReader& ir) {
-  llvmbw::IRLowering lowering{ ir };
-  std::shared_ptr<llvmbw::Program> program = lowering.lower_all();
-  std::cout << "Writing...\n\n";
-  program->writeTxt(std::cout);
-  std::cout.flush();
-}
-
 int main(int argc, char** argv)
 {
   if (argc < 2) {
@@ -38,15 +29,17 @@ int main(int argc, char** argv)
 
   llvmbw::IRReader ir{ argv[1] };
   //ir.debugPrintAll();
-  
-  lower_test(ir);
 
+  std::shared_ptr<llvmbw::Program> program = ir.lower_all();
+  std::cout << "Writing...\n\n";
+  program->writeTxt(std::cout);
+  std::cout.flush();
   // ---
 
-  llvmbw::BWMap map{ argv[2] };
-  map.createBackup();
-
-  // stuff
-
-  map.save();
+  //llvmbw::BWMap map{ argv[2] };
+  //map.createBackup();
+  //
+  //// stuff
+  //
+  //map.save();
 }
