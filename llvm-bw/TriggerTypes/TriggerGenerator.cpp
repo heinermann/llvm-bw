@@ -2,9 +2,94 @@
 
 #include "TriggerGenerator.h"
 #include "../../chklib/MappingCore.h"
+#include "../Util.h"
 
 using namespace llvmbw;
-using namespace llvmbw;
+
+
+std::vector<Chk::Trigger> TriggerMacros::Copy32BitValue(uint32_t source, uint32_t dest)
+{
+  std::vector<Chk::Trigger> result;
+  for (unsigned i = 0; i < 32; ++i) {
+    auto trig = TriggerGen::Trigger()
+      .Conditions({
+        ConditionGen::Memory(source, Chk::Condition::Comparison::Exactly, 1 << i, 1 << i)
+      }).Actions({
+        ActionGen::SetMemory(dest, Chk::Action::ValueModifier::SetTo, 1 << i, 1 << i)
+      });
+
+    trig.setPreserveTriggerFlagged(true);
+    result.push_back(trig);
+  }
+  return result;
+}
+
+std::vector<Chk::Trigger> TriggerMacros::Copy32BitValueAsDeathsPlayer(uint32_t source, uint32_t dest)
+{
+  std::vector<Chk::Trigger> result;
+  for (unsigned i = 2; i < 32; ++i) {
+    auto trig = TriggerGen::Trigger()
+      .Conditions({
+        ConditionGen::Memory(source, Chk::Condition::Comparison::Exactly, 1 << i, 1 << i)
+      }).Actions({
+        ActionGen::SetMemory(dest, Chk::Action::ValueModifier::SetTo, (1 << i)/4, (1 << i)/4)
+      });
+
+    trig.setPreserveTriggerFlagged(true);
+    result.push_back(trig);
+  }
+  
+  auto finish = TriggerGen::Trigger()
+    .Actions({
+      ActionGen::SetMemory(dest, Chk::Action::ValueModifier::Add, -(0x58A364 / 4))
+    });
+  finish.setPreserveTriggerFlagged(true);
+
+  result.push_back(finish);
+
+  return result;
+}
+
+Chk::Trigger TriggerGen::ActionSetter::Actions(std::initializer_list<Chk::Action> actions)
+{
+  require(actions.size() <= Chk::Trigger::MaxActions);
+
+  size_t n = 0;
+  for (Chk::Action act : actions) {
+    trig.actions[n] = act;
+    ++n;
+  }
+  if (n < Chk::Trigger::MaxActions) {
+    trig.actions[n] = ActionGen::NoAction();
+  }
+  return trig;
+}
+
+Chk::Trigger TriggerGen::ConditionSetter::Actions(std::initializer_list<Chk::Action> actions)
+{
+  return Conditions({}).Actions(actions);
+}
+
+TriggerGen::ActionSetter TriggerGen::ConditionSetter::Conditions(std::initializer_list<Chk::Condition> conditions)
+{
+  require(conditions.size() <= Chk::Trigger::MaxConditions);
+
+  size_t n = 0;
+  for (Chk::Condition cond : conditions) {
+    trig.conditions[n] = cond;
+    ++n;
+  }
+  if (n < Chk::Trigger::MaxConditions) {
+    trig.conditions[n] = ConditionGen::NoCondition();
+  }
+  return ActionSetter(trig);
+}
+
+TriggerGen::ConditionSetter TriggerGen::Trigger()
+{
+  Chk::Trigger trigger;
+  return ConditionSetter(trigger);
+}
 
 Chk::Condition ConditionGen::NoCondition() {
   Chk::Condition cond{};
@@ -106,6 +191,29 @@ Chk::Condition ConditionGen::Deaths(Sc::Player::Id player, Chk::Condition::Compa
   cond.unitType = unitType;
   cond.flags = 0;
   cond.maskFlag = Chk::Condition::MaskFlag::Disabled;
+  return cond;
+}
+Chk::Condition ConditionGen::Memory(uint32_t memAddress, Chk::Condition::Comparison comparison, uint32_t amount) {
+  Chk::Condition cond{};
+  cond.conditionType = Chk::Condition::Type::Deaths;
+  cond.player = (memAddress - 0x58A364) / 4;
+  cond.comparison = comparison;
+  cond.amount = amount;
+  cond.unitType = Sc::Unit::Type::TerranMarine;
+  cond.flags = 0;
+  cond.maskFlag = Chk::Condition::MaskFlag::Disabled;
+  return cond;
+}
+Chk::Condition ConditionGen::Memory(uint32_t memAddress, Chk::Condition::Comparison comparison, uint32_t amount, uint32_t mask) {
+  Chk::Condition cond{};
+  cond.locationId = mask;
+  cond.conditionType = Chk::Condition::Type::Deaths;
+  cond.player = (memAddress - 0x58A364) / 4;
+  cond.comparison = comparison;
+  cond.amount = amount;
+  cond.unitType = Sc::Unit::Type::TerranMarine;
+  cond.flags = 0;
+  cond.maskFlag = Chk::Condition::MaskFlag::Enabled;
   return cond;
 }
 Chk::Condition ConditionGen::CommandTheLeast() {
@@ -489,6 +597,19 @@ Chk::Action ActionGen::SetMemory(uint32_t memAddress, Chk::Action::ValueModifier
   act.type = 0;
   act.flags = 0;
   act.maskFlag = Chk::Action::MaskFlag::Disabled;
+  return act;
+}
+Chk::Action ActionGen::SetMemory(uint32_t memAddress, Chk::Action::ValueModifier modifier, uint32_t number, uint32_t mask)
+{
+  Chk::Action act{};
+  act.locationId = mask;
+  act.actionType = Chk::Action::Type::SetDeaths;
+  act.group = (memAddress - 0x58A364) / 4;
+  act.type2 = modifier;
+  act.number = number;
+  act.type = 0;
+  act.flags = 0;
+  act.maskFlag = Chk::Action::MaskFlag::Enabled;
   return act;
 }
 Chk::Action ActionGen::Order() {

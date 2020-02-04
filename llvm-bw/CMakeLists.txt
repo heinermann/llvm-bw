@@ -26,6 +26,7 @@ add_executable (llvm-bw
                 "IRLowering.cpp"
                 "TriggerLowering.cpp"
                 "TriggerLowering.h"
+                "Util.h"
 
                 "BW/Offsets.h"
                 "BW/Offsets.cpp"
@@ -37,6 +38,8 @@ add_executable (llvm-bw
                 "TriggerTypes/FastVarWriteOnly.h"
                 "TriggerTypes/TriggerGenerator.h"
                 "TriggerTypes/TriggerGenerator.cpp"
+                "TriggerTypes/TrigMemBlock.h"
+                "TriggerTypes/TrigMemBlock.cpp"
 
                 "TriggerIR/Add.cpp"
                 "TriggerIR/Add.h"
@@ -92,6 +95,7 @@ add_executable (llvm-bw
                 "Exceptions/UnsupportedException.h"
                 "Exceptions/NameConflictException.h"
                 "Exceptions/MissingIdException.h"
+                "Exceptions/InvalidArgumentException.h"
                )
 
 set_property(TARGET llvm-bw PROPERTY CXX_STANDARD 17)

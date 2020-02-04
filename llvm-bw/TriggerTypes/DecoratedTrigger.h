@@ -1,20 +1,19 @@
 #pragma once
 #include <set>
-#include <iostream>
 #include <optional>
+
+#include "TrigMemBlock.h"
+
 #include "../../chklib/MappingCore.h"
 
 namespace llvmbw {
 
-  class DecoratedTrigger {
+  class DecoratedTrigger : public TrigMemBlock {
   private:
     //static unsigned current_id;
   public:
     unsigned id;
     Chk::MemTrigger trig = {};
-
-    std::set<size_t> ptrRelocationOffsets;
-    std::set<size_t> groupRelocationOffsets;
 
     DecoratedTrigger(unsigned id);
     virtual ~DecoratedTrigger() {};

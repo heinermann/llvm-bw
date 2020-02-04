@@ -3,8 +3,38 @@
 #include "../../chklib/MappingCore.h"
 
 #include <cstdint>
+#include <vector>
+#include <initializer_list>
+
 
 namespace llvmbw {
+  namespace TriggerMacros {
+    std::vector<Chk::Trigger> Copy32BitValue(uint32_t source, uint32_t dest);
+    std::vector<Chk::Trigger> Copy32BitValueAsDeathsPlayer(uint32_t source, uint32_t dest);
+  }
+
+  namespace TriggerGen {
+    // TODO: Optimize, since this copies stuff around a lot
+    class ActionSetter {
+    private:
+      Chk::Trigger trig;
+    public:
+      ActionSetter(Chk::Trigger& _trig) : trig(_trig) {}
+      Chk::Trigger Actions(std::initializer_list<Chk::Action> actions);
+    };
+
+    class ConditionSetter {
+    private:
+      Chk::Trigger trig;
+    public:
+      ConditionSetter(Chk::Trigger& _trig) : trig(_trig) {}
+      ActionSetter Conditions(std::initializer_list<Chk::Condition> conditions);
+      Chk::Trigger Actions(std::initializer_list<Chk::Action> actions);
+    };
+
+    ConditionSetter Trigger();
+  }
+
   namespace ConditionGen {
     Chk::Condition NoCondition();
     Chk::Condition CountdownTimer();
@@ -22,6 +52,8 @@ namespace llvmbw {
     Chk::Condition IsBriefing();
     Chk::Condition Opponents();
     Chk::Condition Deaths(Sc::Player::Id player, Chk::Condition::Comparison comparison, uint32_t amount, Sc::Unit::Type unitType);
+    Chk::Condition Memory(uint32_t memAddress, Chk::Condition::Comparison comparison, uint32_t amount);
+    Chk::Condition Memory(uint32_t memAddress, Chk::Condition::Comparison comparison, uint32_t amount, uint32_t mask);
     Chk::Condition CommandTheLeast();
     Chk::Condition CommandTheLeastAt();
     Chk::Condition LeastKills();
@@ -79,6 +111,7 @@ namespace llvmbw {
     Chk::Action CreateUnit();
     Chk::Action SetDeaths(Sc::Player::Id player, Chk::Action::ValueModifier modifier, uint32_t number, Sc::Unit::Type unitType);
     Chk::Action SetMemory(uint32_t memAddress, Chk::Action::ValueModifier modifier, uint32_t number);
+    Chk::Action SetMemory(uint32_t memAddress, Chk::Action::ValueModifier modifier, uint32_t number, uint32_t mask);
     Chk::Action Order();
     Chk::Action Comment();
     Chk::Action GiveUnitsToPlayer();

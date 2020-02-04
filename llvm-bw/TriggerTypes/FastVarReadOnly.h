@@ -18,10 +18,15 @@ namespace llvmbw {
       Chk::Condition::Comparison initialComparison = Chk::Condition::Comparison::Exactly
     ) : DecoratedTrigger()
     {
-      this->trig.trigger.conditions[0] = ConditionGen::Deaths(initialTargetPlayer, Chk::Condition::Comparison::Exactly, initialValue, 0);
-      this->trig.trigger.conditions[1] = ConditionGen::NoCondition();
-      this->trig.trigger.actions[0] = ActionGen::SetDeaths(offsetof(Chk::MemTrigger, Chk::Action::ValueModifier::SetTo, 0, 0);
-      this->trig.trigger.actions[1] = ActionGen::NoAction();
+      using namespace ConditionGen;
+      using namespace ActionGen;
+
+      this->trig.trigger = TriggerGen::Trigger()
+        .Conditions({
+          Deaths(initialTargetPlayer, Chk::Condition::Comparison::Exactly, initialValue, 0)
+        }).Actions({
+          SetDeaths(offsetof(Chk::MemTrigger, Chk::Action::ValueModifier::SetTo, 0, 0)
+        });
 
       this->groupRelocationOffsets.insert(offsetof(Chk::MemTrigger, trigger.actions[0].group));
     }

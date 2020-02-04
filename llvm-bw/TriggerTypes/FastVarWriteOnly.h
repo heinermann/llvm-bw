@@ -17,9 +17,12 @@ namespace llvmbw {
       Chk::Action::ValueModifier initialModifier = Chk::Action::ValueModifier::SetTo
     ) : DecoratedTrigger()
     {
-      this->trig.trigger.condition[0] = ConditionGen::NoCondition();
-      this->trig.trigger.actions[0] = ActionGen::SetDeaths(initialTargetPlayer, initialModifier, initialValue, 0);
-      this->trig.trigger.actions[1] = ActionGen::NoAction();
+      using namespace ActionGen;
+
+      this->trig.trigger = TriggerGen::Trigger()
+        .Actions({
+          SetDeaths(initialTargetPlayer, initialModifier, initialValue, 0)
+        });
     }
     virtual ~FastVarWriteOnly() override {}
 
