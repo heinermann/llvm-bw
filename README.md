@@ -1,12 +1,14 @@
-## Dependencies
+## For Developers
+
+### Dependencies
 - [Git](https://git-scm.com/)
 - [CMake](https://cmake.org/)
 - LLVM (see subsection, install cmake first)
 - CLang
 
-### Windows
+#### Windows
 
-#### Installing LLVM
+##### Installing LLVM
 We need to do it from source to inclue the proper CMake, header, and library files which are otherwise not included in the downloadable installer.
 
 1. `git clone git@github.com:llvm/llvm-project.git`
@@ -22,20 +24,22 @@ We need to do it from source to inclue the proper CMake, header, and library fil
 5. Reboot your system.
 
 
-### Linux
+#### Linux
 TODO
 
-## Building
+### Building
 Once you've sorted out the dependencies, use the following commands. Alternative on Windows you can open the Visual Studio solution file and switch to the CMake targets or directory view in the solution explorer and build from there.
 
-### Run Once
+#### Run Once
 1. `mkdir build`
 2. `cd build`
 3. `cmake ../`
 
-### Repeat for each build
+#### Repeat for each build
 `cmake --build .`
 
-## Using
-1. Use CLang to compile a C++ or other language to LLVM IR with `clang++ -S -m32 -Ofast -emit-llvm test.cpp`.
-2. Run `llvm-bw test.ll out.chk`.
+## For Users
+1. Download and install [LLVM 9.0.0 from here](http://releases.llvm.org/download.html).
+2. Download pre-built llvm-bw.
+3. Use CLang to compile C++ to LLVM IR with `clang++ -S -m32 -Ofast -emit-llvm your_code.cpp`.
+4. Run `llvm-bw your_code.ll input_map.scm`.
